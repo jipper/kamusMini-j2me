@@ -1,11 +1,6 @@
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-
-import javax.microedition.io.Connector;
-import javax.microedition.io.file.FileConnection;
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
 import javax.microedition.rms.RecordStoreException;
@@ -20,18 +15,13 @@ public class teskamus extends MIDlet implements CommandListener
 
 	private Display display;
 	
-	private Command cmdExit, cmdFind, cmdStoring, cmdSaving , cmdSaveFile, cmdCloseAndDeleteRms;
+	private Command cmdExit, cmdFind, cmdStoring,   cmdCloseAndDeleteRms;
 	private Form frm;
 	private TextField tfKeyword;
 	private StringItem strResult = new StringItem("Hasil", null);
 	
 	private dbdb db_handler; 
-	private String my_own_data[][] = { 
-			{ "1", "curi" , "steal"},
-			{ "2", "cari" , "look forward"},
-			{ "3", "ciri" , "look like"}
-	};
-	
+	 
 	
 	
 	private String word1, word2;
@@ -49,19 +39,16 @@ public class teskamus extends MIDlet implements CommandListener
 		cmdExit 	= new Command("cabut", Command.EXIT, 0);
 		cmdFind 	= new Command("cari", Command.SCREEN, 1);
 		cmdStoring 	= new Command("FileToRms", Command.SCREEN, 2);
-		cmdSaving	= new Command("tmpToFile" , Command.SCREEN, 3);
-		cmdSaveFile = new Command("rmsToFile" , Command.SCREEN ,4);
-		cmdCloseAndDeleteRms = new Command("closeAndDeleteRms", Command.SCREEN, 5);
+ 		cmdCloseAndDeleteRms = new Command("closeAndDeleteRms", Command.SCREEN, 5);
 		
 		
 		frm = new Form("waka");
 		
 		frm.addCommand(cmdExit);
 		frm.addCommand(cmdFind);
-		frm.addCommand(cmdSaving);
+	 
 		frm.addCommand(cmdStoring);
-		frm.addCommand(cmdSaveFile);
-		frm.addCommand(cmdCloseAndDeleteRms);
+ 		frm.addCommand(cmdCloseAndDeleteRms);
 		
 		tfKeyword = new TextField("kata", "", 10, TextField.ANY	);
 		
@@ -103,14 +90,8 @@ public class teskamus extends MIDlet implements CommandListener
 				e.printStackTrace();
 			}
 		}
-		else if(c == cmdSaving)
-		{
-			 get_from_tmpdata_and_tulis_ke_file ();
-		}
-		else if(c == cmdSaveFile)
-		{
-			get_from_rms_and_tulis_ke_file(db_handler);
-		}
+		 
+		 
 		else if(c == cmdCloseAndDeleteRms)
 		{
 			
@@ -255,85 +236,8 @@ public class teskamus extends MIDlet implements CommandListener
 		}).start();
 	}
 	
-	public void get_from_tmpdata_and_tulis_ke_file ()
-	{
-		new Thread(new Runnable() {
-			
-			public void run() {
-				// TODO Auto-generated method stub
-				
-				 
-				FileConnection fd = null;
-				try
-				{
-					fd = (FileConnection)Connector.open("file:///root1/wew.txt",Connector.READ_WRITE);
-					OutputStream os = fd.openOutputStream();
-					DataOutputStream dos = new DataOutputStream(os); 
-				 
-					dos.writeInt(my_own_data.length);
-					
-					for(int i=0; i <= my_own_data.length-1; i++)
-					{
-						
-						System.out.println("writing : " + my_own_data[i][0]);	dos.writeUTF(my_own_data[i][0]);
-						System.out.println("writing : " + my_own_data[i][1]);	dos.writeUTF(my_own_data[i][1]);
-						System.out.println("writing : " + my_own_data[i][2]);	dos.writeUTF(my_own_data[i][2]);
-						System.out.println("==========");
-					}			  
-					
-					dos.flush();
-					dos.close();
-					
-					os.close();
-					fd.close();
-				}
-				catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-				}
-			}
-		}).start();
-	}
-
-	public void get_from_rms_and_tulis_ke_file (final dbdb x)
-	{
-//		new Thread(new Runnable() {
-//			
-//			public void run() {
-//				// TODO Auto-generated method stub
-//				
-//				 
-//				FileConnection fd = null;
-//				try
-//				{
-//					fd = (FileConnection)Connector.open("file:///root1/wew.txt",Connector.READ_WRITE);
-//					OutputStream os = fd.openOutputStream();
-//					DataOutputStream dos = new DataOutputStream(os); 
-//				 
-//					
-//
-//					
-//					dos.flush();
-//					dos.close();
-//					
-//					os.close();
-//					fd.close();
-//				}
-//				catch (Exception e) {
-//					// TODO: handle exception
-//					e.printStackTrace();
-//				}
-//			}
-//		}).start();
-		
-		try {
-			System.out.println("jml data " + x.rStore.getNumRecords());
-		} catch (RecordStoreNotOpenException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
+ 
+ 
 }
 
 
