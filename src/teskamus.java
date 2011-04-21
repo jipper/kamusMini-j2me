@@ -1,45 +1,40 @@
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 import javax.microedition.lcdui.*;
 import javax.microedition.midlet.*;
-import javax.microedition.rms.RecordStoreException;
-import javax.microedition.rms.RecordStoreFullException;
-import javax.microedition.rms.RecordStoreNotFoundException;
-import javax.microedition.rms.RecordStoreNotOpenException;
-
 import controller.dbdb;
+import me.regexp.*;
 
 public class teskamus extends MIDlet implements CommandListener
 {
 
 	private Display display;
 	
-	private Command cmdExit, cmdFind, cmdStoring,   cmdCloseAndDeleteRms;
+	private Command cmdExit, cmdFind,   cmdBackToMain;
 	private Form frm;
+	private Form frmResult;
 	private TextField tfKeyword;
-	private StringItem strResult = new StringItem("Hasil", null);
+	//private StringItem strResult = new StringItem("Hasil", null), strResult1 = new StringItem("Hasil1", null), strResult2 = new StringItem("Hasil2", null), strResult3 = new StringItem("Hasil3", null), strResult4 = new StringItem("Hasil4", null);
+
 	
-	private dbdb db_handler; 
-	 
-	
-	
-	private String word1, word2;
 	
 	public teskamus() {
 		// TODO Auto-generated constructor stub
 		
-		db_handler = new dbdb();
-		db_handler.filename = "tes_db";
-		db_handler.init();
-		
+	
+		new dbdb();
 		
 		display = Display.getDisplay(this);
 		
-		cmdExit 	= new Command("cabut", Command.EXIT, 0);
-		cmdFind 	= new Command("cari", Command.SCREEN, 1);
-		cmdStoring 	= new Command("FileToRms", Command.SCREEN, 2);
- 		cmdCloseAndDeleteRms = new Command("closeAndDeleteRms", Command.SCREEN, 5);
+		cmdExit 			= new Command("cabut", Command.EXIT, 0);
+		cmdFind 			= new Command("cari", Command.SCREEN, 1);
+ 
+ 		
+ 		cmdBackToMain = new Command("BackToMain", Command.SCREEN, 1);
 		
 		
 		frm = new Form("waka");
@@ -47,18 +42,17 @@ public class teskamus extends MIDlet implements CommandListener
 		frm.addCommand(cmdExit);
 		frm.addCommand(cmdFind);
 	 
-		frm.addCommand(cmdStoring);
- 		frm.addCommand(cmdCloseAndDeleteRms);
+	 
 		
 		tfKeyword = new TextField("kata", "", 10, TextField.ANY	);
 		
 		frm.append(tfKeyword);
-		frm.append(strResult);	 
+	//	frm.append(strResult);	 
 		
 		frm.setCommandListener(this);
 		
 		display.setCurrent(frm);
-		
+ 
 		
 	}
 	
@@ -76,43 +70,23 @@ public class teskamus extends MIDlet implements CommandListener
 		else if(c == cmdFind)
 		{
 		//	System.out.println(System.getProperty("microedition.io.file.FileConnection"));
+						 
+//			db_handler.filename = "tes_db";			
+//			db_handler.init();
+//			
+			if(frmResult != null)
+			{
+				frmResult.deleteAll();
+			}
 			
-			db_handler.searchRecordStore(tfKeyword, strResult);
+			 baca_from_filestring_regex(tfKeyword.getString());
+			 
+ 
 			
 		}
-		else if(c == cmdStoring)
+		else if(c == cmdBackToMain)
 		{
-			//read from file.... and storing to rms db-temporary-as-y'all've-known-about...hhh
-			try {
-				baca_from_file_and_store_to_rms(db_handler);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		 
-		 
-		else if(c == cmdCloseAndDeleteRms)
-		{
-			
-			try {
-				db_handler.close(true);
-			} catch (RecordStoreNotOpenException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (RecordStoreNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (RecordStoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			try {
-				destroyApp(true);
-			} catch (MIDletStateChangeException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			display.setCurrent(frm);
 		}
 	}
 
@@ -120,18 +94,9 @@ public class teskamus extends MIDlet implements CommandListener
 	protected void destroyApp(boolean arg0) throws MIDletStateChangeException {
 		// TODO Auto-generated method stub
 		System.out.println("exiting....");
-		try {
-			db_handler.close(false);
-		} catch (RecordStoreNotOpenException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RecordStoreNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RecordStoreException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
+		 
+		 
 		notifyDestroyed();
 	}
 
@@ -147,96 +112,133 @@ public class teskamus extends MIDlet implements CommandListener
 		 
 	}
 	
+	//new func
+	private String readLine(Reader in) throws IOException {
+	    // This is not efficient.
+	    StringBuffer line = new StringBuffer();
+	    int i;
+	    while ((i = in.read()) != -1) {
+	      char c = (char)i;
+	      if (c == '\n') break;
+	      if (c == '\r') ;
+	      else line.append(c);
+	    }
+	    if (line.length() == 0) return null;
+	    return line.toString();
+	  }
 	
 	
-	///da func
-	public void baca_from_file_and_store_to_rms(final dbdb x) throws IOException
+	 
+ 
+	
+	public void baca_from_filestring_regex(final String tmp_string)
 	{
-		new Thread(new Runnable() {
-			public void run() {
  
-				 
-				 
+		
+		frmResult = new Form("resultz");
+		frmResult.addCommand(cmdBackToMain);
+		frmResult.setCommandListener(this);
+		display.setCurrent(frmResult);
+		
+		System.out.println("starting...");
+ 		new Thread(new Runnable() {
+ 			
+ 		public void run() {
+				// TODO Auto-generated method stub
+				//InputStream is_arti = getClass().getResourceAsStream("/" + c + "_arti.txt");
+				InputStream is_arti = getClass().getResourceAsStream("/arti.txt");
+				DataInputStream dis_arti = new DataInputStream(is_arti);
+				
+				InputStream is_entri = getClass().getResourceAsStream("/entri.txt");
+				DataInputStream dis_entri = new DataInputStream(is_entri);
+				
+				Reader reader_in_arti = new InputStreamReader(is_arti);
+				Reader reader_in_entri = new InputStreamReader(is_entri);
+				
+				String tmp_data_arti;
+				String tmp_data_entri;
+				int zzz = 1;
  
-						//DataInputStream dis = fd.openDataInputStream();
+				
+				RE reg = new RE("^" + tmp_string.toLowerCase() +"(\\w*)");
+				long millis_awal = System.currentTimeMillis();
+				try {
+					while(((tmp_data_entri = readLine(reader_in_entri)) != null) && ((tmp_data_arti = readLine(reader_in_arti)) != null))
+					{
 						
-						InputStream is = getClass().getResourceAsStream("/data.res");
-						DataInputStream dis = new DataInputStream(is); 
 						
-						int max_loop = 0;
-						try {
-							max_loop = dis.readInt();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						System.out.println("maxloop : " + max_loop);
 						
-						for(int i = 1; i <= max_loop ;i++)
+						if(reg.match(tmp_data_entri))	
 						{
-					 
-						 
-							 try {
-								word1 = dis.readUTF();
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							 try {
-								word2 = dis.readUTF();
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-							 
-								
-							 							  
-								System.out.println("word1 	-> " + word1);					 
-								System.out.println("word2 	-> " + word2);
-					  
 							
+							StringItem strResult  = new StringItem("Hasil", null);
+							strResult.setText(tmp_data_entri + " -> " + tmp_data_arti);
+							frmResult.append(strResult);
 							
-							try {
-								x.addNewData( word1, word2);
-								System.out.println("==========added=================");
-							} catch (RecordStoreNotOpenException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (RecordStoreFullException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							} catch (RecordStoreException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-						
-						
-						try {
-							is.close();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						try {
-							dis.close();
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
 						}
 					 
-				 
-				 
- 
-
-			}
-		}).start();
+	 
+						
+						
+						
+						zzz ++;
+					}
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+	 
+					e1.printStackTrace();
+				}
+				
+				long millis_akhir = System.currentTimeMillis();
+				
+				System.out.println("jml waktu : " + (float)( millis_akhir - millis_awal)/1000 + " detik");
+				Alert aler = new Alert("Selesai!", "wktu yg dprlukan : " + (float)( millis_akhir - millis_awal)/1000 + " detik" , null, AlertType.INFO);
+				aler.setTimeout(Alert.FOREVER);
+				display.setCurrent(aler);
+				//closinggg
+				try {
+					is_arti.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					dis_arti.close();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try {
+					is_entri.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					dis_entri.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try {
+					reader_in_arti.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					reader_in_entri.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+ 			}
+ 		}).start();
 	}
 	
- 
+	 
  
 }
 
